@@ -11,11 +11,41 @@ cat('######################',dis_name,'#######################','\n',sep = " ")
 source('function.R')
 require(survival)
 require(EnMCB)
-X00names <- readr::read_csv("tcga_names.txt",col_names = FALSE)
-tcga_names <- X00names$X1
+library(readxl)
+library(data.table)
+library(readr)
+
 mmc1 <- readxl::read_excel("mmc1.xlsx", sheet = "TCGA-CDR")
-load(paste('ALLDATA_',dis_name,'.RData',sep = ""))
-load(paste('models',dis_name,'.RData',sep = ""))
+
+library(RTCGA)
+downloadTCGA(cancerTypes = dis_name, '.Merge_methylation__humanmethylation450__jhu_usc_edu__Level_3', destDir ='.', date = "2016-01-28")
+
+#This url may need further fixed when using different OS.
+url_tcga= paste( "./", 
+                 dis_name, "/gdac.broadinstitute.org_", 
+                 dis_name,".Merge_methylation__humanmethylation450__jhu_usc_edu__Level_3__within_bioassay_data_set_function__data.Level_3.2016012800.0.0/",
+                 dis_name,".methylation__humanmethylation450__jhu_usc_edu__Level_3__within_bioassay_data_set_function__data.data.txt", sep="")
+cat('pre process the data for',cancer_name,'\n')
+met_prepare<-as.matrix(fread(input = url_tcga
+                             ,sep = "\t",header = T))
+
+met_prepare<-met_prepare[,grep("-01A-",colnames(met_prepare))]
+
+pdata<-data.frame(mmc1[mmc1$type %in% cancer_name,])
+
+rownames(pdata)<-pdata$bcr_patient_barcode
+
+remaining<-intersect(substr(colnames(met_prepare),1,12),pdata$bcr_patient_barcode)
+
+colnames(met_prepare)<-substr(colnames(met_prepare),1,12)
+
+rownames(met_prepare)<-met_prepare[,"Composite Element REF"]
+
+met_prepare<-met_prepare[-1,remaining]
+pdata<-pdata[remaining,]
+
+met_final<-pre_process_methylation(as.numeric_matrix(met_prepare),Mvalue=FALSE)
+
 
 dir.create(dis_name)
 setwd(dis_name)
