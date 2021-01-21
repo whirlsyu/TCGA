@@ -1,6 +1,6 @@
 # TCGA
 Analysis code for all TCGA methylation data
-To use this code, one can type following in shell:
+To use this code, firsly you may download the whole repository, into the folder, then, one can type following in shell:
 ```
 Rscript EnMCB.R BLCA
 ```
