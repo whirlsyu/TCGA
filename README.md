@@ -1,8 +1,11 @@
 # TCGA
 Analysis code for all TCGA methylation data
 To use this code, one can type following in shell:
+```
 Rscript EnMCB.R BLCA
+```
 which BLCA can be replaced by any other TCGA Abbreviations as following:
+```
 LAML	Acute Myeloid Leukemia
 ACC	Adrenocortical carcinoma
 BLCA	Bladder Urothelial Carcinoma
@@ -40,3 +43,4 @@ THCA	Thyroid carcinoma
 UCS	Uterine Carcinosarcoma
 UCEC	Uterine Corpus Endometrial Carcinoma
 UVM	Uveal Melanoma
+```
