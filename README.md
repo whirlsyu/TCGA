@@ -2,9 +2,9 @@
 Analysis code for all TCGA methylation data
 To use this code, firsly you may download the whole repository, then, one can type the following in shell:
 ```
-Rscript EnMCB.R BLCA
+Rscript EnMCB.R TCGA_CODE
 ```
-which BLCA can be replaced by any other TCGA Abbreviations as following:
+which TCGA_CODE can be replaced by one of the TCGA Abbreviations as following:
 ```
 LAML	Acute Myeloid Leukemia
 ACC	Adrenocortical carcinoma
