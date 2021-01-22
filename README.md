@@ -44,4 +44,4 @@ UCS	Uterine Carcinosarcoma
 UCEC	Uterine Corpus Endometrial Carcinoma
 UVM	Uveal Melanoma
 ```
-If you encounter any kind of problem, don't hesitate to contact me at whirlsyu@gmail.com or yuxin@webmail.hzau.edu.cn
+If you encounter any kind of problem, please don't hesitate to contact me at whirlsyu@gmail.com or yuxin@webmail.hzau.edu.cn
