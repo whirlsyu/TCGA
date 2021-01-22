@@ -44,6 +44,8 @@ UCS	Uterine Carcinosarcoma
 UCEC	Uterine Corpus Endometrial Carcinoma
 UVM	Uveal Melanoma
 ```
+Before your analysis, please install R and our package EnMCB.
+
 For your custom analysis, please modify the code in EnMCB.R. 
 
 All the TCGA clinical (survival) data are in the file "mmc1.xlsx".
