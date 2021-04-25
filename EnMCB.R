@@ -77,23 +77,44 @@ res_mean_all<-apply(total_res_select,1, function(x,data_set=trainingset){
 rz=!(is.na(y_surv_train)|y_surv_train[,1]==0)
 library(glmnet)
 
-cvg<-cv.glmnet(res_mean_all[rz,],y_surv_train[rz],family='cox',type.measure = 'deviance')
+cvg<-cv.glmnet(res_mean_all[rz,],y_surv_train[rz],family='cox',type.measure = 'C')
 plot(cvg)
-total_res_select_filtered<- total_res_select[which(coef(cvg, s=0.01)!=0),]
+
+
+lambda <- cvg$lambda.1se
+repeat{
+  #at least 10 MCBs are included
+  if (sum(coef(cvg, s=lambda)!=0) >=10 & sum(coef(cvg, s=lambda)!=0) <=20) break
+  if (sum(coef(cvg, s=lambda)!=0) < 10) lambda = lambda - 0.0001
+  if (sum(coef(cvg, s=lambda)!=0) > 20) lambda = lambda + 0.0001
+}
+  
+total_res_select_filtered<- total_res_select[which(coef(cvg, s=lambda)!=0),]
+
+# #S.t.x method results are not as good as cv.glmnet, therefore here we only use cv.glmnet
+# stx_selection<-apply(res_mean_all[rz,1:10], 2, 
+#       function(x,...) {
+#         s_t_x(Stime=y_surv_train[rz,1],
+#               status = y_surv_train[rz,2],
+#                 marker = x, predict.time = 5)$ks_res$p.value
+#       })
+# stx_selection<-unlist(stx_selection)
+# stx_selection<-p.adjust(stx_selection)
+# #### end selections ####
 
 new_res_cv<-NULL
 for (i in seq(nrow(total_res_select_filtered))) {
   single_in_mcb_new_res_select_filtered<-total_res_select_filtered[i,]
-  try(suppressWarnings(new_res_cv<-rbind(new_res_cv,auc_cal_cv_tt(single_in_mcb_new_res_select_filtered,
+  try(new_res_cv<-rbind(new_res_cv,auc_cal_cv_tt(single_in_mcb_new_res_select_filtered,
                                                  trainingset,
                                                  testingset,
                                                  y_surv_train,
                                                  y_surv_test,
-                                                 nfold = 10,seed = 6))))
+                                                 nfold = 10,seed = 6)))
 }
 write.csv(new_res_cv,file = paste('results',dis_name,'.csv',sep = ""))
 
-RP_data<-new_res_cv[,c('COX_AUC_CV.AUC','SVM_AUC_CV.AUC','eNet_AUC_CV.AUC','CoxBoost_AUC_CV.AUC','EnMCB_AUC_CV.AUC')]
+RP_data<-new_res_cv[,c('COX_AUC_CV.AUC','SVM_AUC_CV.AUC','eNet_AUC_CV.AUC','mboost_AUC_CV.AUC','EnMCB_AUC_CV.AUC')]
 RP_data<-as.numeric_matrix(RP_data)
 
 #boxplot
@@ -101,7 +122,7 @@ large_data<-data.frame(rbind(
   cbind(RP_data[,'COX_AUC_CV.AUC'],rep('Cox',nrow(RP_data))),
   cbind(RP_data[,'SVM_AUC_CV.AUC'],rep('eNet',nrow(RP_data))),
   cbind(RP_data[,'eNet_AUC_CV.AUC'],rep('SVR',nrow(RP_data))),
-  cbind(RP_data[,'CoxBoost_AUC_CV.AUC'],rep('CoxBoost',nrow(RP_data))),
+  cbind(RP_data[,'mboost_AUC_CV.AUC'],rep('mboost',nrow(RP_data))),
   cbind(RP_data[,'EnMCB_AUC_CV.AUC'],rep('Ensemble',nrow(RP_data)))
 ))
 colnames(large_data)<-c("value", "group")
@@ -123,29 +144,29 @@ single_res<-t(as.matrix(total_res_select_filtered[total_res_select_filtered[,'MC
 em<-ensemble_model(single_res = single_res,training_set = trainingset,Surv_training = y_surv_train)
 
 #use the model to predict the responses in training set
-ep<-ensemble_prediction_lp(ensemble_model = em,prediction_data = trainingset)
-
+ep<-ensemble_prediction(ensemble_model = em,prediction_data = trainingset,mutiple_results = T)
+#ep<-ensemble_prediction_lp(ensemble_model = em,prediction_data = trainingset)
 #calculation of AUC, plot and save the results in pdf files
 ROC_multiple(test_frame = data.frame(cox=ep['cox',],
-                                              svm=ep['svm',],
-                                              eNet=ep['enet',],
-                                              coxboost=ep['coxboost',],
-                                              ensemble=ep['ensemble',]
+                                     svm=ep['svm',],
+                                     eNet=ep['enet',],
+                                     mboost=ep['mboost',],
+                                     ensemble=ep['ensemble',]
 ),
-y = y_surv_train,file_name = paste(dis_name,"mutiple model training")
+y = y_surv_train,file_name = paste(dis_name,"multiple model training")
 )
 
 #use the model to predict the response in testing set
-ep_t<-ensemble_prediction_lp(ensemble_model = em,prediction_data = testingset)
-
+ep_t<-ensemble_prediction(ensemble_model = em,prediction_data = testingset,mutiple_results = T)
+#ep_t<-ensemble_prediction_lp(ensemble_model = em,prediction_data = testingset)
 #calculation of AUC, plot and save the results in pdf files
 ROC_multiple(test_frame = data.frame(cox=ep_t['cox',],
-                                              svm=ep_t['svm',],
-                                              eNet=ep_t['enet',],
-                                              coxboost=ep_t['coxboost',],
-                                              ensemble=ep_t['ensemble',]
+                                     svm=ep_t['svm',],
+                                     eNet=ep_t['enet',],
+                                     mboost=ep_t['mboost',],
+                                     ensemble=ep_t['ensemble',]
 ),
-y = y_surv_test,file_name = paste(dis_name,"mutiple model test") 
+y = y_surv_test,file_name = paste(dis_name,"multiple model test") 
 )
 
 #draw survival curve for training set
