@@ -83,10 +83,10 @@ plot(cvg)
 
 lambda <- cvg$lambda.1se
 repeat{
-  #at least 10 MCBs are included
-  if (sum(coef(cvg, s=lambda)!=0) >=10 & sum(coef(cvg, s=lambda)!=0) <=20) break
+  # normally 10 - 100 MCBs are included
+  if (sum(coef(cvg, s=lambda)!=0) >=10 & sum(coef(cvg, s=lambda)!=0) <=150) break
   if (sum(coef(cvg, s=lambda)!=0) < 10) lambda = lambda - 0.0001
-  if (sum(coef(cvg, s=lambda)!=0) > 20) lambda = lambda + 0.0001
+  if (sum(coef(cvg, s=lambda)!=0) > 150) lambda = lambda + 0.0001
 }
   
 total_res_select_filtered<- total_res_select[which(coef(cvg, s=lambda)!=0),]
