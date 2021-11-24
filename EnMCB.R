@@ -83,7 +83,7 @@ plot(cvg)
 
 lambda <- cvg$lambda.1se
 repeat{
-  # normally 10 - 100 MCBs are included
+  # normally 10 - 100 MCBs are included, change the thresholds manually if needed (retained MCB are too large or too small).
   if (sum(coef(cvg, s=lambda)!=0) >=10 & sum(coef(cvg, s=lambda)!=0) <=150) break
   if (sum(coef(cvg, s=lambda)!=0) < 10) lambda = lambda - 0.0001
   if (sum(coef(cvg, s=lambda)!=0) > 150) lambda = lambda + 0.0001
